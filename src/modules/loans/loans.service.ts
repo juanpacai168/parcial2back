@@ -55,6 +55,10 @@ export class LoansService {
         throw new ForbiddenException('Solo miembros pueden recibir prestamos');
       }
 
+      const loanedAt = new Date();
+      const dueAt = new Date(dto.dueAt);
+      this.assertLoanWindow(loanedAt, dueAt, maxLoanDays);
+
       const activeCount = await manager.count(Loan, {
         where: { userId: user.id, status: In(OPEN_STATUSES), returnedAt: IsNull() },
       });
@@ -79,10 +83,6 @@ export class LoansService {
       if (blockingLoan) {
         throw new ConflictException(`El item ya esta prestado por el loan ${blockingLoan.id}`);
       }
-
-      const loanedAt = new Date();
-      const dueAt = new Date(dto.dueAt);
-      this.assertLoanWindow(loanedAt, dueAt, maxLoanDays);
 
       const firstReservation = await this.findFirstActiveReservation(manager, item.id, loanedAt);
       if (firstReservation && firstReservation.userId !== user.id) {
