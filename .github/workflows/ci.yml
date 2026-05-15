@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: loans
+          POSTGRES_PASSWORD: loans
+          POSTGRES_DB: loans
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U loans -d loans"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      NODE_ENV: test
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USER: loans
+      DB_PASSWORD: loans
+      DB_NAME: loans
+      JWT_ACCESS_SECRET: ci-access-secret-must-be-at-least-32-chars
+      JWT_REFRESH_SECRET: ci-refresh-secret-must-be-at-least-32-chars
+      BCRYPT_SALT_ROUNDS: 10
+      MAX_ACTIVE_LOANS: 3
+      DAILY_FINE_RATE: 0.50
+      MAX_LOAN_DAYS: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Docker build
+        run: docker build -t library-loans-api .
