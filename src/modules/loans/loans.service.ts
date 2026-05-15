@@ -174,6 +174,9 @@ export class LoansService {
       }
 
       const returnedAt = new Date();
+      if (loan.status === LoanStatus.ACTIVE && loan.dueAt < returnedAt && !loan.returnedAt) {
+        loan.status = LoanStatus.OVERDUE;
+      }
       const daysLate = this.daysLate(loan.dueAt, returnedAt);
       loan.returnedAt = returnedAt;
       loan.status = LoanStatus.RETURNED;
