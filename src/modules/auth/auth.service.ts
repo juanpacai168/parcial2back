@@ -43,7 +43,7 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto): Promise<AuthResponse> {
-    const user = await this.usersService.create({ ...dto, role: UserRole.MEMBER }, UserRole.MEMBER);
+    const user = await this.usersService.create(dto);
     return this.buildAuthResponseFromDetail(user);
   }
 

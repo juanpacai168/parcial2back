@@ -54,6 +54,10 @@ describe('LoansService', () => {
     role: UserRole.LIBRARIAN,
   };
 
+  function validFutureDueAt(): string {
+    return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  }
+
   function createService(manager: Record<string, unknown>): LoansService {
     const dataSource = {
       transaction: jest.fn((cb: (entityManager: EntityManager) => Promise<unknown>) =>
@@ -154,7 +158,7 @@ describe('LoansService', () => {
         {
           userId: member.id,
           itemId: item.id,
-          dueAt: '2026-01-08T00:00:00.000Z',
+          dueAt: validFutureDueAt(),
         },
         actor,
       ),
@@ -179,7 +183,7 @@ describe('LoansService', () => {
         {
           userId: member.id,
           itemId: item.id,
-          dueAt: '2026-01-08T00:00:00.000Z',
+          dueAt: validFutureDueAt(),
         },
         actor,
       ),
